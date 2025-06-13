@@ -128,6 +128,8 @@ class JointAxis(Enum):
 
     @classmethod
     def from_array(cls, joint_axis: numpy.ndarray) -> Optional["JointAxis"]:
+        if joint_axis is None:
+            return None
         if numpy.allclose(joint_axis, [1, 0, 0], atol=1e-3):
             return JointAxis.X
         elif numpy.allclose(joint_axis, [0, 1, 0], atol=1e-3):
@@ -197,6 +199,8 @@ def get_joint_axis_and_quat(joint_axis) -> [JointAxis, Optional[numpy.ndarray]]:
     joint_axis_tmp = JointAxis.from_array(joint_axis)
     if joint_axis_tmp is not None:
         return joint_axis_tmp, None
+    elif joint_axis is None:
+        return None, None
     else:
         v1 = numpy.array(joint_axis)
         v1 = v1 / numpy.linalg.norm(v1)
@@ -283,7 +287,10 @@ class JointProperty:
                 # TODO: Convert quat to axis, then set axis to Z again
                 raise ValueError(f"Joint axis {self.axis} not supported.")
         else:
-            self._quat = self.axis.to_quat()
+            if self.axis is None:
+                self._quat = numpy.zeros(4)
+            else:
+                self._quat = self.axis.to_quat()
 
     @property
     def axis(self) -> JointAxis:
